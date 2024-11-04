@@ -5,7 +5,8 @@
   "scripts": {
     "start:build": "esbuild src/index.ts --bundle --outfile=dist/index.js --watch",
     "start:db": "json-server --watch db.json --port 3001",
-    "start": "concurrently npm:start:*"
+    "start:server": "http-server -c-1 . -p 3000",
+    "start": "concurrently \"npm run start:build\" \"npm run start:db\" \"npm run start:server\""
   },
   "keywords": [],
   "author": "",
@@ -16,5 +17,8 @@
     "concurrently": "^9.0.1",
     "esbuild": "^0.24.0",
     "live-server": "^1.2.2"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
   }
 }

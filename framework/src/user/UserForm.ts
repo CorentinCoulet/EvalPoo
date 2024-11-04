@@ -22,9 +22,9 @@ export class UserForm extends View<User, UserProps> {
                 <h1>User Form</h1>
                 <label>Nom</label>
                 <input />
-                <button class="set-name">Update Name</button>
-                <button class="set-age">Random Age</button>
-                <button class="save-model">Save User</button>
+                <button class="set-name">Changer le nom</button>
+                <button class="set-age">Age aléatoire</button>
+                <button class="save-model">Sauvegarder l'utilisateur</button>
             </div>
         `
     }

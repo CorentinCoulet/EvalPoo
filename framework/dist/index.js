@@ -2582,7 +2582,7 @@
       this.trigger = this.event.trigger;
     }
     fetch() {
-      axios_default.get(this.url).then((response) => {
+      return axios_default.get(this.url).then((response) => {
         response.data.forEach((json) => {
           const user = this.deserialization(json);
           this.models.push(user);
@@ -2713,9 +2713,9 @@
                 <h1>User Form</h1>
                 <label>Nom</label>
                 <input />
-                <button class="set-name">Update Name</button>
-                <button class="set-age">Random Age</button>
-                <button class="save-model">Save User</button>
+                <button class="set-name">Changer le nom</button>
+                <button class="set-age">Age al\xE9atoire</button>
+                <button class="save-model">Sauvegarder l'utilisateur</button>
             </div>
         `;
     }
@@ -2762,12 +2762,90 @@
     }
   };
 
+  // src/framework/views/CollectionView.ts
+  var CollectionView = class {
+    constructor(parent, collection) {
+      this.parent = parent;
+      this.collection = collection;
+      this.collection.on("change", () => {
+        this.render();
+      });
+    }
+    getName(model) {
+      return model.get("name") || "Utilisateur inconnu";
+    }
+    render() {
+      this.parent.innerHTML = "";
+      const selectElement = document.createElement("select");
+      selectElement.innerHTML = `<option value="">S\xE9lectionnez un utilisateur</option>`;
+      this.collection.models.forEach((model) => {
+        const option = document.createElement("option");
+        option.value = model.get("id")?.toString() || "";
+        option.textContent = this.getName(model);
+        selectElement.appendChild(option);
+      });
+      this.parent.appendChild(selectElement);
+      selectElement.addEventListener("change", (event) => {
+        const selectedUserId = event.target.value;
+        this.onSelect(selectedUserId);
+      });
+    }
+  };
+
+  // src/user/UserList.ts
+  var UserList = class extends CollectionView {
+    renderItem(model) {
+    }
+    onSelect(selectedId) {
+      const selectedUser = this.collection.models.find((user) => user.get("id")?.toString() === selectedId);
+      const rootElement2 = document.querySelector(".user-show");
+      if (selectedUser && rootElement2) {
+        const userShow = new UserShow(rootElement2, selectedUser);
+        userShow.render();
+      } else if (rootElement2) {
+        rootElement2.innerHTML = "<p>Veuillez s\xE9lectionner un utilisateur</p>";
+      }
+    }
+  };
+
   // src/index.ts
   var rootElement = document.getElementById("root");
-  var john = User.build({ name: "JOHN", age: 20 });
+  var userList;
   if (rootElement) {
-    const userEdit = new UserEdit(rootElement, john);
-    userEdit.render();
-    console.log(userEdit);
+    const userShowContainer = document.createElement("div");
+    userShowContainer.className = "user-show";
+    const userEditContainer = document.createElement("div");
+    userEditContainer.className = "user-edit";
+    const createUserButton = document.createElement("button");
+    createUserButton.innerText = "Cr\xE9er un nouvel utilisateur";
+    createUserButton.style.marginTop = "10px";
+    createUserButton.onclick = () => {
+      const newUser = User.build({ name: "Nouvel Utilisateur", age: 0 });
+      newUser.on("save", () => {
+        userCollection.fetch().then(() => userList.render());
+      });
+      newUser.save();
+    };
+    rootElement.appendChild(userShowContainer);
+    rootElement.appendChild(userEditContainer);
+    rootElement.appendChild(createUserButton);
+    const userCollection = User.buildCollection();
+    userCollection.fetch().then(() => {
+      const userList2 = new UserList(userShowContainer, userCollection);
+      userList2.render();
+      userList2.onSelect = (selectedId) => {
+        const selectedUser = userCollection.models.find((user) => user.get("id")?.toString() === selectedId);
+        userEditContainer.innerHTML = "";
+        if (selectedUser) {
+          const userEdit = new UserEdit(userEditContainer, selectedUser);
+          selectedUser.on("save", () => {
+            userList2.render();
+          });
+          userEdit.render();
+        } else {
+          userEditContainer.innerHTML = "<p>Veuillez s\xE9lectionner un utilisateur</p>";
+        }
+      };
+    });
   }
 })();

@@ -13,8 +13,8 @@ export class Collection<T, P> {
     on = this.event.on
     trigger = this.event.trigger
 
-    fetch() : void {
-        axios.get(this.url)
+    fetch() : Promise<void> {
+        return axios.get(this.url)
             .then(response => {
                 response.data.forEach((json: P) => {
                     const user = this.deserialization(json)
